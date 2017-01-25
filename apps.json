@@ -1,0 +1,24 @@
+{
+  /**
+     * Application configuration section
+     * http://pm2.keymetrics.io/docs/usage/application-declaration/
+     */
+  "apps" : [
+
+    // First application
+    {
+      "name"      : "tyler-api",
+      "script"    : "app/app.js",
+      "watch"     : ["app"],
+      "min_uptime"       : "200s", // 200 seconds, defaults to 1000
+      "max_restarts"     : 10, // defaults to 15
+      "ignore_watch": ["[\\/\\\\]\\./", "node_modules", "logs","test", "scripts", "docs"],
+      "exec_interpreter" : "node",
+      "exec_mode"        : "cluster",
+      "instances": 0,
+      "env_production" : {
+        "NODE_ENV": "production"
+      }
+    }
+  ]
+}

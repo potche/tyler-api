@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: result.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: result.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Controlador para entrega masiva de resultados
+ * @author Julio Bravo &lt;jbravo@clb.unoi.com>
+ * @version 1.0.0
+ * @module app/controllers/result
+ */
+
+var Answer = require('../models/answer');
+var utils = require('../../config/utils');
+var security = require('../../config/security');
+var mongo = require('mongoose').mongo;
+
+var resultsController = {
+
+    /**
+     *
+     * Método que devuelve un arreglo de resultados de acuerdo a los parámetros proporcionados
+     *
+     * @function getResults
+     * @param req {object} Petición http
+     * @param res {object} Respuesta http
+     * @example
+     * GET / HTTP 1.1
+     *
+     * /tyler/v1/results/bySurveySchool/56be0ec521665eea2b9290a0/56be0ec521665eea2b9290a1
+     * /tyler/v1/results/bySurveyPeriod/56be0ec521665eea2b9290a0/56be0ec521665eea2b9290a2
+     * /tyler/v1/results/bySurveySubject/56be0ec521665eea2b9290a0/56be0ec521665eea2b9290a3
+     * /tyler/v1/results/bySurveyLevel/56be0ec521665eea2b9290a0/56be0ec521665eea2b9290a5
+     * /tyler/v1/results/bySurveyProfile/56be0ec521665eea2b9290a0/56be0ec521665eea2b9290a4
+     * /tyler/v1/results/bySurveyRole/56be0ec521665eea2b9290a0/56be0ec521665eea2b9290a4/56be0ec521665eea2b9290a4
+     * /tyler/v1/results/bySurveyGroup/56be0ec521665eea2b9290a0/56be0ec521665eea2b9290a1/56be0ec521665eea2b9290a2/56be0ec521665eea2b9290a6
+     */
+
+    getResults: function(req,res){
+
+        var parameters = resultsController.parseParameters(req);
+
+        Answer.find( parameters, function(err,results){
+
+            if(err){
+
+                utils.handleDBError(err,res);
+            }
+            else{
+
+                if(typeof results === 'object' &amp;&amp; results.length === 0){
+
+                    res.status(404);
+                    res.json(utils.getResponseFormat(404,'Results not found with given parameters',null));
+                }
+                else{
+
+                    res.status(200);
+                    res.json(results);
+                }
+            }
+        });
+    },
+
+    /**
+     *
+     * Método ocupado por el API de resultados para parsear los parámetros y construir el query.
+     * Con esto nos evitamos duplicar código y construir endpoint por endpoint
+     * @function parseParameters
+     * @private
+     * @param req {object} Petición http
+     * @returns {object} Query document para hacer consulta
+     */
+
+    parseParameters: function(req){
+
+        var query = { $and: [
+
+            { "surveyId": mongo.ObjectId(req.params._resultSurvey)},
+            { "respondant.applicationId": security.getApplicationId(req.headers['x-access-token'])}
+        ]};
+
+        for(var i = 1; i &lt; Object.keys(req.params).length; i++){
+
+            var key =  Object.keys(req.params)[i];
+            var queryKey = key.replace(/_/g,'.');
+            var obj = JSON.parse('{"'+queryKey+'":"'+req.params[key]+'"}');
+
+            query.$and.push(obj);
+        }
+        return query;
+    }
+};
+
+module.exports = resultsController;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-app_controllers_answer.html">app/controllers/answer</a></li><li><a href="module-app_controllers_application.html">app/controllers/application</a></li><li><a href="module-app_controllers_question.html">app/controllers/question</a></li><li><a href="module-app_controllers_result.html">app/controllers/result</a></li><li><a href="module-app_controllers_survey.html">app/controllers/survey</a></li><li><a href="module-app_controllers_user.html">app/controllers/user</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Category">Category</a></li><li><a href="global.html#create">create</a></li><li><a href="global.html#createBatch">createBatch</a></li><li><a href="global.html#createCategory">createCategory</a></li><li><a href="global.html#delete">delete</a></li><li><a href="global.html#deleteAll">deleteAll</a></li><li><a href="global.html#findResponse">findResponse</a></li><li><a href="global.html#getAll">getAll</a></li><li><a href="global.html#getById">getById</a></li><li><a href="global.html#QuestionType">QuestionType</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Wed Jun 15 2016 10:57:47 GMT-0500 (CDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
